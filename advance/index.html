@@ -1,0 +1,125 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="http://code.jquery.com/jquery-1.7.2.min.js" type="text/javascript" charset="UTF-8"></script>
+</head>
+<body>
+    <div id="loading" style="width: 50px; height: 50px"><img src="ajax-loader.gif" alt="loading" /></div>
+    <div id="header">header</div>
+    <div id="content">Hello World</div>
+    <div id="footer">footer</div>
+
+
+<script type="text/javascript">
+(function($) {
+    // loading
+    var imgList = [];
+    $.extend({
+        preload: function(imgArr, option) {
+            var setting = $.extend({
+                init: function(loaded, total) {},
+                loaded: function(img, loaded, total) {},
+                loaded_all: function(loaded, total) {}
+            }, option);
+            var total = imgArr.length;
+            var loaded = 0;
+
+            setting.init(0, total);
+            for(var i in imgArr) {
+                imgList.push($("<img />"));
+                
+                // var src = imgArr[i] + "?" + new Date().getTime();
+                var src = imgArr[i];
+                imgList[i].attr("src", src);
+                imgList[i].load(function() {
+                    loaded++;
+                    setting.loaded(this, loaded, total);
+                    if(loaded == total) {
+                        setting.loaded_all(loaded, total, imgList);
+                    }
+                });
+                
+            }
+        }
+    });
+    
+    /**
+    * jQuery Plugin
+    *
+    * targetに対して要素を中央に配置する
+    *
+    * @param {jQuery} target optional
+    * @param {String} type optional vertical, horizonal, all
+    * @return jQuery Object
+    */
+    jQuery.fn.setCenter = function(target, type) {
+        target = target || $(window);
+        target = (target instanceof jQuery) ? target : $(target);
+        if (target.get(0).tagName === 'HTML' || target.get(0).tagName === 'BODY') {
+            target = $(window);
+        }
+        // size
+        var width = $(this).width();
+        var height = $(this).height();
+        // target element size
+        var targetWidth = target.width();
+        var targetHeight = target.height();
+        if (target.get(0) != window) {
+            var targetCssPos;
+            // target element position
+            targetCssPos = target.css('position');
+            if ((targetCssPos != 'absolute') && (targetCssPos != 'relative')) {
+                target.css({
+                    position: 'relative'
+                });
+            }
+        }
+        // offset
+        var offsetX = Math.ceil((targetWidth - width) / 2);
+        var offsetY = Math.ceil((targetHeight - height) / 2);
+        // type vertical, horizonal, all
+        type = type || 'all';
+        // position property
+        var pos = {
+            position: 'absolute'
+        };
+        if (type == 'vertical' || type == 'all') {
+            pos.top = offsetY;
+        }
+        if (type == 'horizonal' || type == 'all') {
+            pos.left = offsetX;
+        }
+        // layout center
+        $(this).css(pos);
+
+        return $(this);
+    };
+}(jQuery));
+
+
+$(function() {
+    $.preload([
+        "http://farm7.staticflickr.com/6030/5920933492_85abbe06fc_o.jpg",
+        "http://farm7.staticflickr.com/6126/5920448731_7cb80105e0_o.jpg",
+        "http://farm6.staticflickr.com/5030/5601826043_c093226063_o.jpg"
+    ], {
+        init: function(loaded, total) {
+            $("#header, #content, #footer").hide();
+        },
+        loaded: function(img, loaded, total) {
+            var percent = Math.round(loaded/total*100);
+        },
+        loaded_all: function(loaded, total, imgList) {
+            $("#loading").delay(500).fadeOut();
+            for (var i in imgList) {
+                $('#content').append(imgList[i]);
+            }
+            $("#header, #content, #footer").delay(1000).fadeIn("slow");
+        }
+    });
+    $('#loading').setCenter();
+});
+</script>
+</body></html>
